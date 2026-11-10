@@ -9,16 +9,17 @@ description: Use ao produzir um vídeo do canal do pedido até a publicação, p
 |---|---|---|---|---|---|
 | 1 | Pauta | pesquisador-pautas | tema ou "sugira" | `briefing.md` | 5 ideias ranqueadas, a escolhida com ≥3 fontes por fato |
 | 2 | Roteiro | roteirista | `briefing.md` | `roteiro.md` | gancho ≤15 s, blocos `[Bxx]` com `[CENA]` e `[VOZ]`, tamanho bate com a duração |
-| 3 | Checagem | revisor-qualidade | `roteiro.md` + `briefing.md` | `revisao.md` | todo fato com fonte, nada que fira as políticas (skill `politicas-youtube-ia`) |
-| 4 | Narração | diretor-narracao | `roteiro.md` | `audio/Bxx.wav`, `audio/tempos.json` | um áudio por bloco, duração total ±10% da meta |
+| 3 | Checagem | revisor-qualidade | `roteiro.md` + `briefing.md` | `revisao.md` | todo fato com fonte, nada que fira as políticas (skill `politicas-youtube-ia`) + gate `roteiro` do `qualidade-producao` sem ❌ |
+| 4 | Narração | diretor-narracao | `roteiro.md` | `audio/Bxx.wav`, `audio/tempos.json` | um áudio por bloco, duração total ±10% da meta + gate `voz --transcrever` sem ❌ |
 | 5 | Visual | diretor-arte | `roteiro.md` | `visual/` | uma imagem por `[CENA]`, no estilo de `canal/biblia-visual.md` |
-| 6 | Edição | editor-video (+ sonoplasta) | áudio + visual | `final/video.mp4`, `final/legendas.srt` | render 1920x1080 30fps, áudio em -14 LUFS |
+| 6 | Edição | editor-video (+ sonoplasta) | áudio + visual | `final/video.mp4`, `final/legendas.srt` | render 1920x1080 30fps, áudio em -14 LUFS + gates `legenda` e `edicao` sem ❌ |
 | 7 | Thumbnail | especialista-thumbnail | `roteiro.md` | `thumb/` | 3 variações 1280x720 |
 | 8 | SEO | especialista-youtube | tudo acima | `seo.md` | título, descrição com capítulos, tags |
-| 9 | Revisão final | revisor-qualidade | pasta inteira | `revisao.md` atualizado | checklist final ok |
+| 9 | Gates + revisão final | qualidade-producao, depois revisor-qualidade | pasta inteira | `qualidade/parecer.md` + `revisao.md` | `gates.py todos` + `preview` sem ❌, sem regressão, e checklist editorial ok |
 | 10 | Publicar | **usuário** | — | — | aprovação explícita do usuário |
 
 As etapas 5 e 7 podem rodar em paralelo com a 4.
+Gate reprovado: o gerente repassa `qualidade/correcoes.md` a cada dono (skill `gates-qualidade`).
 
 ## Pasta do vídeo
 ```
