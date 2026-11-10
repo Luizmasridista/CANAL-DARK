@@ -1,5 +1,7 @@
 # 🗺️ Mapa de skills e conectores MCP por agente
 
+> 💸 **Fase atual: custo zero** (decisão do usuário em 2026-11-10). Narração com **Kokoro** e imagens com **FLUX.1-schnell no ComfyUI** (RTX 3050), tudo local e grátis. ElevenLabs e Replicate ficam para quando houver orçamento.
+>
 > Status: **mapeamento** (nada implementado ainda). Cada item aqui vira depois uma branch própria (`skills/<nome>` ou `tools/<nome>`).
 >
 > **Glossário rápido**
@@ -16,7 +18,7 @@
 | 🧭 gerente | `pipeline-video` | GitHub (já existe) | 🔴 P0 |
 | 🔎 pesquisador-pautas | `pesquisa-com-fontes`, `caca-de-pautas` | Busca web (WebSearch/WebFetch nativos) + Brave Search ou Exa | 🔴 P0 |
 | ✍️ roteirista | `roteiro-retencao` | — (só texto) | 🔴 P0 |
-| 🎙️ diretor-narracao | `narracao-elevenlabs` | **ElevenLabs MCP** (já no `.mcp.json`) | 🔴 P0 |
+| 🎙️ diretor-narracao | `narracao-ia` | **Kokoro** local (grátis) · ElevenLabs MCP no futuro | 🔴 P0 |
 | 🎨 diretor-arte | `biblia-visual`, `prompts-imagem-ia` | Geração de imagem (ver §3) | 🔴 P0 |
 | 🎬 editor-video | `edicao-ffmpeg`, `legendas-srt` | FFmpeg via Bash · banco de imagens (Pexels/Pixabay) | 🔴 P0 |
 | 🔊 sonoplasta | `trilha-e-mixagem` | ElevenLabs (efeitos e música) · Splice | 🟡 P1 |
@@ -36,7 +38,7 @@
 | 2 | `pesquisa-com-fontes` | pesquisador | Mínimo 3 fontes confiáveis por fato, registrar link + data, separar fato de lenda/teoria | 🔴 |
 | 3 | `caca-de-pautas` | pesquisador | Achar temas com demanda (tendências, perguntas do público, concorrentes), nota de potencial (curiosidade × busca × concorrência) | 🟡 |
 | 4 | `roteiro-retencao` | roteirista | Gancho nos primeiros 15 s, "loops abertos" (promessas que prendem até o fim), ritmo por bloco, marcações `[CENA]` e `[PAUSA]`, tamanho por duração (~150 palavras/min) | 🔴 |
-| 5 | `narracao-elevenlabs` | diretor-narracao | Escolha e trava da voz do canal, ajustes (estabilidade, similaridade, estilo), pausas e ênfase, gerar por bloco, montar `audio/tempos.json` | 🔴 |
+| 5 | `narracao-ia` | diretor-narracao | Escolha e trava da voz do canal, ajustes (estabilidade, similaridade, estilo), pausas e ênfase, gerar por bloco, montar `audio/tempos.json` | 🔴 |
 | 6 | `biblia-visual` | diretor-arte | Identidade fixa do canal: paleta, estilo de imagem, fontes, logotipo — para todo vídeo parecer do mesmo canal | 🔴 |
 | 7 | `prompts-imagem-ia` | diretor-arte, editor, thumbnail | Modelo de prompt com estilo do canal, proporções (16:9, 9:16), o que evitar (mãos, texto na imagem, rostos reais) | 🔴 |
 | 8 | `edicao-ffmpeg` | editor-video | Receitas prontas: imagem parada com zoom lento ("efeito Ken Burns"), juntar cenas, trilha por baixo da voz, volume padrão do YouTube (-14 LUFS), render 1080p 30fps | 🔴 |
@@ -57,13 +59,13 @@
 
 | Necessidade | Recomendação | Alternativas | Precisa de chave? | Prioridade |
 |---|---|---|---|---|
-| 🎙️ Voz de narração | **ElevenLabs MCP** (`elevenlabs-mcp`, oficial, já configurado) | — | `ELEVENLABS_API_KEY` | 🔴 |
+| 🎙️ Voz de narração | **Kokoro-82M** local (Apache 2.0, PT-BR) via `scripts/narracao/narrar.py` | ElevenLabs MCP (pago, já configurado) | Não | 🔴 |
 | 🔎 Pesquisa | **WebSearch + WebFetch nativos** do Claude (já vêm) | Brave Search MCP (oficial da Brave) · Exa MCP · Firecrawl (ler sites inteiros) | Brave/Exa: sim | 🔴 |
-| 🎨 Imagens IA (cenas e thumb) | **Escolher 1 só** para manter estilo: Replicate MCP (acesso a vários modelos, paga por uso) | Adobe Firefly · Canva (gera imagem e edita texto) · fal.ai | Sim | 🔴 |
+| 🎨 Imagens IA (cenas e thumb) | **FLUX.1-schnell GGUF no ComfyUI** (local, Apache 2.0) via `scripts/imagens/gerar_imagem.py` | Replicate · Adobe Firefly · Canva (pagos) | Não | 🔴 |
 | 🎬 Edição e render | **FFmpeg pela linha de comando** (agente usa Bash + receitas da skill `edicao-ffmpeg`) — mais estável que um MCP | MCPs de FFmpeg da comunidade (imaturos) | Não | 🔴 |
 | 🖼️ Banco de imagens/vídeos livres | Pexels ou Pixabay API (montar MCP pequeno em `tools/`) | Adobe Stock (pago) | Sim (grátis) | 🟡 |
-| 🔊 Efeitos e música | **ElevenLabs** (efeitos sonoros e música, mesma chave) | Splice MCP (samples com licença) | Sim | 🟡 |
-| 📝 Legendas | Tempos da ElevenLabs ou transcrição com ElevenLabs Speech-to-Text | Whisper local | — | 🟡 |
+| 🔊 Efeitos e música | **Biblioteca de Áudio do YouTube** · Pixabay Music/SFX (grátis, uso comercial) | ElevenLabs · Splice (pagos) | Não | 🟡 |
+| 📝 Legendas | **faster-whisper** local (MIT) | ElevenLabs Speech-to-Text | Não | 🟡 |
 | 📺 YouTube (upload, metadados) | **MCP próprio** `tools/youtube-mcp` sobre a YouTube Data API v3 (login Google OAuth) | MCPs da comunidade (avaliar segurança antes) | OAuth Google | 🟡 |
 | 📊 Métricas | Mesmo `youtube-mcp` + YouTube Analytics API | Exportar CSV do YouTube Studio | OAuth Google | 🟡 |
 | 🎞️ Vídeo gerado por IA (b-roll em movimento) | Via Replicate/fal (Kling, Runway, Luma, Veo) | — | Sim (caro) | 🟢 |
@@ -82,7 +84,7 @@
 
 | Onda | O que entra | Branches |
 |---|---|---|
-| 1️⃣ Primeiro vídeo | `pipeline-video`, `pesquisa-com-fontes`, `roteiro-retencao`, `narracao-elevenlabs`, `edicao-ffmpeg`, `politicas-youtube-ia` + MCP de imagem | `skills/<nome>` (1 por skill) · `tools/imagem-mcp` |
+| 1️⃣ Primeiro vídeo | `pipeline-video`, `pesquisa-com-fontes`, `roteiro-retencao`, `narracao-ia`, `edicao-ffmpeg`, `politicas-youtube-ia` + narração e imagem locais | `skills/<nome>` (1 por skill) · `tools/narracao-kokoro` · `tools/imagem-local` |
 | 2️⃣ Cara de canal | `biblia-visual`, `prompts-imagem-ia`, `thumbnail-ctr`, `seo-youtube`, `checagem-de-fatos` | `skills/<nome>` |
 | 3️⃣ Escala | `trilha-e-mixagem`, `legendas-srt`, `cortes-shorts`, MCP Pexels, `tools/youtube-mcp` | `skills/<nome>` · `tools/<nome>` |
 | 4️⃣ Aprender com dados | `analise-metricas`, `caca-de-pautas`, vídeo IA, calendário | `skills/<nome>` · `tools/<nome>` |
