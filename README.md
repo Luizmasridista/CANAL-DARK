@@ -13,3 +13,5 @@ Equipe de 7 agentes para produzir vídeos de canal dark com IA.
 | especialista-youtube | SEO, título, descrição, estratégia |
 
 Instalar: `claude plugin install ./canal-dark-plugin` e definir `ELEVENLABS_API_KEY`.
+
+Convenção de Git: ver [CONVENCAO-GIT.md](CONVENCAO-GIT.md).
