@@ -1,0 +1,5 @@
+# Opcionais (os gates básicos só precisam de FFmpeg + Python)
+faster-whisper   # --transcrever: checa pronúncia (WER)
+torch            # --mos: nota de naturalidade UTMOS (MIT)
+soundfile
+pytest           # testes dos próprios gates
