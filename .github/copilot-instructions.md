@@ -3,7 +3,7 @@
 Projeto: canal dark no YouTube, conteúdos diversos, 100% feito com IA (voz ElevenLabs).
 Agentes em `.github/agents/` (espelho de `agents/` do plugin Claude Code). Sempre comece pelo `gerente`.
 
-Pipeline: pesquisador-pautas → roteirista → diretor-narracao → editor-video → especialista-thumbnail → especialista-youtube.
+Pipeline: pesquisador-pautas → roteirista → diretor-narracao → editor-video → especialista-thumbnail → especialista-youtube → editor-shorts → revisor-qualidade → (publica) → analista-metricas. Apoio: diretor-arte (identidade) e sonoplasta (trilha/SFX, junto da edição).
 Cada vídeo em `producao/<AAAA-MM-DD>-<slug>/`. Idioma: português do Brasil.
 Ao mudar um agente em `agents/`, atualize o espelho em `.github/agents/` no mesmo commit.
 

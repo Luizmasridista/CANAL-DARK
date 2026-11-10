@@ -1,6 +1,6 @@
 # canal-dark (plugin Claude Code)
 
-Equipe de 7 agentes para produzir vídeos de canal dark com IA.
+Equipe de 12 agentes para produzir vídeos de canal dark com IA.
 
 | Agente | Papel |
 |---|---|
@@ -11,6 +11,11 @@ Equipe de 7 agentes para produzir vídeos de canal dark com IA.
 | editor-video | Cenas, legendas, render |
 | especialista-thumbnail | Conceitos e prompts de thumb |
 | especialista-youtube | SEO, título, descrição, estratégia |
+| diretor-arte | Identidade visual do canal |
+| sonoplasta | Trilha, SFX e mixagem |
+| editor-shorts | Cortes verticais (Shorts) |
+| revisor-qualidade | Checagem final antes de publicar |
+| analista-metricas | Desempenho e recomendações |
 
 Instalar: `claude plugin install ./canal-dark-plugin` e definir `ELEVENLABS_API_KEY`.
 
