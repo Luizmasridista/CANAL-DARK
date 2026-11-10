@@ -14,6 +14,7 @@ Código de saída: 0 = aprovado (com ou sem avisos), 1 = reprovado.
 """
 import argparse
 import json
+import math
 import re
 import statistics
 import subprocess
@@ -269,7 +270,7 @@ def gate_roteiro(pasta, rel):
 def gate_voz(pasta, rel, transcrever=False, mos=False):
     L = LIM["voz"]
     textos = {bid: (texto_falado(c), PAUSA.search(c)) for bid, c in blocos(pasta)}
-    wavs = sorted((pasta / "audio").glob("B*.wav"))
+    wavs = sorted(f for f in (pasta / "audio").glob("B*.*") if f.suffix.lower() in (".wav", ".mp3"))
     if not wavs:
         rel.add("voz", "áudios por bloco", "FALHOU", 0, "1 por bloco", "Gerar narração (narrar.py).")
         return
@@ -427,7 +428,11 @@ def gate_legenda(pasta, rel):
     if not srt.exists():
         rel.add("legenda", "final/legendas.srt", "FALHOU", "ausente", "obrigatório", "Gerar a legenda (skill edicao-ffmpeg §5).")
         return
-    checar_srt(srt, rel, "legenda", palavras_globais(pasta))
+    palavras = palavras_globais(pasta)
+    if not palavras:
+        rel.add("legenda", "sincronia com a fala", "AVISO", "sem tempo por palavra", "audio/Bxx.words.json",
+                "Rodar narrar.py --palavras para conferir a sincronia.", dono="diretor-narracao")
+    checar_srt(srt, rel, "legenda", palavras)
 
 
 def checar_video(arq, rel, gate, formato, meta_s=None):
@@ -461,13 +466,18 @@ def checar_video(arq, rel, gate, formato, meta_s=None):
         rel.faixa(gate, "duração vs meta", abs(total - meta_s) / meta_s, L["duracao_tolerancia"], L["duracao_tolerancia"] * 2,
                   f"Duração {total/60:.1f} min vs meta {meta_s/60:.0f} min.", nome)
     lu = loudness(arq)
-    desvio = abs(lu["I"] - L["lufs_alvo"])
-    rel.faixa(gate, "volume integrado (LUFS)", desvio, L["lufs_aviso"], L["lufs_max"],
-              f"Volume em {lu['I']} LUFS; aplicar loudnorm=I=-14:TP=-1.5.", nome, dono="sonoplasta")
-    rel.add(gate, "pico real (dBTP)", "PASSOU" if lu["TP"] <= L["true_peak_max"] else "FALHOU", lu["TP"],
-            f"≤ {L['true_peak_max']}", "" if lu["TP"] <= L["true_peak_max"] else "Limitar TP a -1.5 no loudnorm.",
-            nome, dono="sonoplasta")
-    rel.metricas[f"{gate}.lufs_desvio"] = round(desvio, 2)
+    if math.isfinite(lu["I"]):
+        desvio = abs(lu["I"] - L["lufs_alvo"])
+        rel.faixa(gate, "volume integrado (LUFS)", desvio, L["lufs_aviso"], L["lufs_max"],
+                  f"Volume em {lu['I']} LUFS; aplicar loudnorm=I=-14:TP=-1.5.", nome, dono="sonoplasta")
+        rel.metricas[f"{gate}.lufs_desvio"] = round(desvio, 2)
+    else:
+        rel.add(gate, "volume integrado (LUFS)", "FALHOU", str(lu["I"]), "valor medido",
+                "Sem áudio medível: conferir a faixa de áudio.", nome, dono="sonoplasta")
+    tp_ok = math.isfinite(lu["TP"]) and lu["TP"] <= L["true_peak_max"]
+    rel.add(gate, "pico real (dBTP)", "PASSOU" if tp_ok else "FALHOU",
+            lu["TP"] if math.isfinite(lu["TP"]) else str(lu["TP"]),
+            f"≤ {L['true_peak_max']}", "" if tp_ok else "Limitar TP a -1.5 no loudnorm.", nome, dono="sonoplasta")
     for i, f in detectar(arq, "blackdetect=d=0.1:pix_th=0.10", "black_start", "black_end"):
         if f - i > L["preto_max_s"] and 1.0 < i < total - 1.0:
             rel.add(gate, "tela preta", "FALHOU", round(f - i, 2), f"≤ {L['preto_max_s']} s",
@@ -626,7 +636,9 @@ def main():
             print("❌ Não dá para usar um vídeo reprovado como baseline.")
             return 1
         BASELINE.parent.mkdir(parents=True, exist_ok=True)
-        BASELINE.write_text(json.dumps(dados["metricas"], ensure_ascii=False, indent=2), encoding="utf-8")
+        base = json.loads(BASELINE.read_text(encoding="utf-8")) if BASELINE.exists() else {}
+        base.update(dados["metricas"])  # relatório parcial não apaga métricas de outros gates
+        BASELINE.write_text(json.dumps(base, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"📌 baseline atualizada com {a.pasta.name}")
         return 0
     rel = Relatorio()

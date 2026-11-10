@@ -226,3 +226,21 @@ def test_prosodia_monotona_vs_expressiva(tmp_path):
 def test_silabas():
     assert gates.silabas("três homens sumiram") == 6
     assert gates.silabas("o farol") == 3
+
+
+def test_legenda_sem_tempo_por_palavra_avisa(pasta):
+    srt(pasta, "1\n00:00:00,000 --> 00:00:02,500\nEm mil e novecentos,\n")
+    rel = gates.Relatorio()
+    gates.gate_legenda(pasta, rel)
+    assert status(rel, "sincronia com a fala") == ["AVISO"]
+
+
+@tem_ffmpeg
+def test_video_mudo_reprova_volume(pasta):
+    v = pasta / "final" / "video.mp4"
+    ff("-f", "lavfi", "-i", "testsrc2=s=1920x1080:r=30:d=3", "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+       "-t", "3", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", str(v))
+    rel = gates.Relatorio()
+    gates.checar_video(v, rel, "edicao", "longo")
+    assert status(rel, "volume integrado (LUFS)") == ["FALHOU"]
+    json.dumps(rel.itens, allow_nan=False)  # relatório continua JSON válido
