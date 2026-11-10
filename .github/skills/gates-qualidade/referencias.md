@@ -18,6 +18,9 @@
 | Pico real (true peak) | ≤ -1 dBTP | margem usual de streaming (EBU R128 / AES) |
 | Voz isolada: RMS, pico, ruído | -23 a -18 dB, ≤ -3 dB, ≤ -60 dB | [ACX Audio Submission Requirements](https://webcf.waybackmachine.org/web/20210510175948/https://www.acx.com/help/acx-audio-submission-requirements/201456300) (audiolivros; a ACX proíbe TTS, usamos só como régua de "voz limpa") |
 | Velocidade da fala | 130–175 palavras/min (alvo 150) | audiolivros em inglês ficam em ~150–160 wpm ([referência](https://thespeakerlab.com/blog/average-words-per-minute-speaking/)); fala espontânea em PT-BR medida em ~90 palavras/min e ~170 sílabas/min ([CoDAS/SciELO](https://scielo.br/j/codas/a/sTGZRHGzpSkLwLS6fZCyVLc/?lang=en)). Narração lida é mais rápida que fala espontânea: **heurística**, calibrar pela voz escolhida |
+| Velocidade em sílabas/s | 4,2–5,8 | locução "off" de telejornal em PT-BR: estilo neutro ~5,55 sílabas/s, estilo informal mais lento ([Revista CEFAC/SciELO](https://www.scielo.br/j/acr/a/XJCYPSbqRRMjSR7RLLq7QTp/?lang=en)) |
+| Pausas por minuto | 10–30 | mesmo estudo: estilo informal ~16,2 pausas/min |
+| Variação de tom (desvio em semitons) | aviso < 1,8, falha < 1,2, teatral > 5 | leitura em voz alta: ~2,2 semitons de desvio (homens 2,18; mulheres 2,27), e a percepção de monotonia acompanha essa medida ([Cumbers, 2013, UW-Milwaukee](https://core.ac.uk/download/217182116.pdf)). Dados em inglês: **heurística** para PT-BR, calibrar pela baseline |
 | Consistência entre blocos | variação ≤ 12% | heurística (ACX pede "nível, tom e ritmo consistentes") |
 | Inteligibilidade (WER) | aviso > 4%, falha > 8% | heurística; Whisper como "ouvinte" automático |
 | Naturalidade (UTMOS) | aviso < 3,5, falha < 3,0 | [SpeechMOS/UTMOS (MIT)](https://github.com/tarepan/SpeechMOS). Treinado em inglês: em PT-BR, use **mais para comparar com a baseline** do que como nota absoluta |

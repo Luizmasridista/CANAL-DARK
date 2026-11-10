@@ -28,7 +28,7 @@ Código de saída 1 = **REPROVADO** (há ❌). Avisos (⚠️) não travam, mas 
 ## O que cada gate mede
 **Roteiro**: palavras vs duração meta (±10% a 150 palavras/min), gancho ≤ 15 s, sem "olá, pessoal / neste vídeo" no gancho, frase ≤ 25 palavras (TTS fica robótico em frase longa), `[CENA]` a cada ≤ 20 palavras, nada com ⚠️, similaridade com roteiros anteriores (risco de "conteúdo inautêntico" do YouTube).
 
-**Voz**: palavras/min por bloco (130–175), consistência entre blocos (variação ≤ 12%), estouro (clipping), pico ≤ -3 dB, volume médio -23 a -18 dB, ruído ≤ -60 dB, pausa estranha > 1,2 s no meio da frase, **inteligibilidade** (o Whisper transcreve o áudio de volta e compara com o roteiro: WER = % de palavras erradas; > 8% reprova e lista as palavras para corrigir com `{{grafia|pronúncia}}`), **naturalidade** (UTMOS, nota 1–5 prevista por IA).
+**Voz**: palavras/min por bloco (130–175), consistência entre blocos (variação ≤ 12%), estouro (clipping), pico ≤ -3 dB, volume médio -23 a -18 dB, ruído ≤ -60 dB, pausa estranha > 1,2 s no meio da frase, **inteligibilidade** (o Whisper transcreve o áudio de volta e compara com o roteiro: WER = % de palavras erradas; > 8% reprova e lista as palavras para corrigir com `{{grafia|pronúncia}}`), **naturalidade** (UTMOS, nota 1–5 prevista por IA), **entonação**: sílabas/s (4,2–5,8), variação de tom em semitons (≥ 1,8; < 1,2 reprova por voz monótona; > 5 teatral) e pausas por minuto (10–30). Padrão completo na skill `narracao-ia`.
 
 **Legenda**: ≤ 42 caracteres por linha, ≤ 2 linhas, leitura ≤ 17 caracteres/s (> 20 reprova), duração 0,83–7 s, sem sobreposição, sincronia com a fala ≤ 0,3 s (pelos `words.json`).
 
