@@ -194,3 +194,35 @@ def test_preview_e_relatorio(pasta):
     rel.add("voz", "x", "FALHOU", 1, 0, "corrigir")
     assert gates.escrever(pasta, rel) == "REPROVADO"
     assert "## diretor-narracao" in (pasta / "qualidade" / "correcoes.md").read_text(encoding="utf-8")
+
+
+# ---------- entonação (prosódia) ----------
+def voz_sintetica(arq, contorno_hz, sr=16000):
+    """Tom com harmônicos seguindo um contorno de altura, com pausas de 0,3 s a cada 2 s (imita frases)."""
+    import numpy as np
+    import soundfile as sf
+    f = np.asarray(contorno_hz, dtype=float)
+    fase = 2 * np.pi * np.cumsum(f) / sr
+    y = sum(np.sin(k * fase) / k for k in range(1, 6)) * 0.2
+    t = np.arange(len(f)) / sr
+    y[(t % 2.0) > 1.7] = 0
+    sf.write(arq, y, sr)
+
+
+@tem_ffmpeg
+def test_prosodia_monotona_vs_expressiva(tmp_path):
+    pytest.importorskip("librosa")
+    import numpy as np
+    sr, n = 16000, 16000 * 8
+    t = np.arange(n) / sr
+    voz_sintetica(tmp_path / "mono.wav", np.full(n, 130.0))
+    voz_sintetica(tmp_path / "viva.wav", 130 * 2 ** (4 * np.sin(2 * np.pi * 0.6 * t) / 12))  # ±4 semitons
+    mono, viva = gates.prosodia(tmp_path / "mono.wav"), gates.prosodia(tmp_path / "viva.wav")
+    assert mono["f0_sigma_st"] < gates.LIM["voz"]["f0_sigma_min"]
+    assert viva["f0_sigma_st"] > gates.LIM["voz"]["f0_sigma_aviso"]
+    assert 20 <= viva["pausas_min"] <= 40  # 1 pausa a cada 2 s
+
+
+def test_silabas():
+    assert gates.silabas("três homens sumiram") == 6
+    assert gates.silabas("o farol") == 3

@@ -1,35 +1,64 @@
 {
   "_leia": "Limites dos quality gates. Cada valor tem a fonte em skills/gates-qualidade/referencias.md. 'heuristica' = calibrar pela baseline do canal.",
   "voz": {
-    "wpm_min": 130, "wpm_max": 175,
+    "wpm_min": 130,
+    "wpm_max": 175,
     "wpm_cv_max": 0.12,
     "pausa_interna_max_s": 1.2,
-    "pico_clip_db": -0.1, "pico_aviso_db": -3.0,
-    "rms_min_db": -23.0, "rms_max_db": -18.0,
+    "pico_clip_db": -0.1,
+    "pico_aviso_db": -3.0,
+    "rms_min_db": -23.0,
+    "rms_max_db": -18.0,
     "ruido_max_db": -60.0,
-    "wer_aviso": 0.04, "wer_max": 0.08,
-    "mos_aviso": 3.5, "mos_min": 3.0
+    "wer_aviso": 0.04,
+    "wer_max": 0.08,
+    "mos_aviso": 3.5,
+    "mos_min": 3.0,
+    "silabas_s_min": 4.2,
+    "silabas_s_max": 5.8,
+    "f0_sigma_min": 1.2,
+    "f0_sigma_aviso": 1.8,
+    "f0_sigma_max": 5.0,
+    "pausas_min_min": 10,
+    "pausas_min_max": 30
   },
   "legenda": {
-    "chars_linha_max": 42, "linhas_max": 2,
-    "cps_aviso": 17, "cps_max": 20,
-    "dur_min_s": 0.833, "dur_max_s": 7.0,
+    "chars_linha_max": 42,
+    "linhas_max": 2,
+    "cps_aviso": 17,
+    "cps_max": 20,
+    "dur_min_s": 0.833,
+    "dur_max_s": 7.0,
     "gap_min_s": 0.067,
-    "sync_aviso_s": 0.3, "sync_max_s": 0.5
+    "sync_aviso_s": 0.3,
+    "sync_max_s": 0.5
   },
   "edicao": {
-    "longo": {"w": 1920, "h": 1080}, "short": {"w": 1080, "h": 1920},
-    "fps": 30, "codec_v": "h264", "pix_fmt": "yuv420p", "codec_a": "aac",
-    "lufs_alvo": -14.0, "lufs_aviso": 1.0, "lufs_max": 2.0,
+    "longo": {
+      "w": 1920,
+      "h": 1080
+    },
+    "short": {
+      "w": 1080,
+      "h": 1920
+    },
+    "fps": 30,
+    "codec_v": "h264",
+    "pix_fmt": "yuv420p",
+    "codec_a": "aac",
+    "lufs_alvo": -14.0,
+    "lufs_aviso": 1.0,
+    "lufs_max": 2.0,
     "true_peak_max": -1.0,
     "av_desvio_max_s": 0.1,
     "preto_max_s": 0.5,
     "congelado_aviso_s": 4.0,
-    "silencio_max_s": 2.0, "silencio_db": -50,
+    "silencio_max_s": 2.0,
+    "silencio_db": -50,
     "cena_limiar": 0.3,
     "plano_max_s": 10.0,
     "plano_medio_gancho_max_s": 6.0,
-    "duracao_tolerancia": 0.10,
+    "duracao_tolerancia": 0.1,
     "short_dur_max_s": 180
   },
   "roteiro": {
@@ -37,19 +66,57 @@
     "gancho_max_s": 15,
     "frase_max_palavras": 25,
     "palavras_por_cena_max": 20,
-    "duracao_tolerancia": 0.10,
-    "similaridade_aviso": 0.30,
-    "proibido_gancho": ["neste vídeo", "se inscreva", "inscreva-se", "olá, pessoal", "fala, galera"]
+    "duracao_tolerancia": 0.1,
+    "similaridade_aviso": 0.3,
+    "proibido_gancho": [
+      "neste vídeo",
+      "se inscreva",
+      "inscreva-se",
+      "olá, pessoal",
+      "fala, galera"
+    ]
   },
-  "thumb": {"w": 1280, "h": 720, "bytes_max": 2097152},
+  "thumb": {
+    "w": 1280,
+    "h": 720,
+    "bytes_max": 2097152
+  },
   "regressao": {
-    "voz.wpm_cv":            {"dir": "menor", "tol": 0.03},
-    "voz.wer_medio":         {"dir": "menor", "tol": 0.02},
-    "voz.mos_medio":         {"dir": "maior", "tol": 0.2},
-    "legenda.cps_max":       {"dir": "menor", "tol": 2.0},
-    "legenda.sync_max_s":    {"dir": "menor", "tol": 0.1},
-    "edicao.lufs_desvio":    {"dir": "menor", "tol": 0.5},
-    "edicao.plano_max_s":    {"dir": "menor", "tol": 2.0},
-    "edicao.plano_medio_gancho_s": {"dir": "menor", "tol": 1.0}
+    "voz.wpm_cv": {
+      "dir": "menor",
+      "tol": 0.03
+    },
+    "voz.wer_medio": {
+      "dir": "menor",
+      "tol": 0.02
+    },
+    "voz.mos_medio": {
+      "dir": "maior",
+      "tol": 0.2
+    },
+    "legenda.cps_max": {
+      "dir": "menor",
+      "tol": 2.0
+    },
+    "legenda.sync_max_s": {
+      "dir": "menor",
+      "tol": 0.1
+    },
+    "edicao.lufs_desvio": {
+      "dir": "menor",
+      "tol": 0.5
+    },
+    "edicao.plano_max_s": {
+      "dir": "menor",
+      "tol": 2.0
+    },
+    "edicao.plano_medio_gancho_s": {
+      "dir": "menor",
+      "tol": 1.0
+    },
+    "voz.f0_sigma_st": {
+      "dir": "maior",
+      "tol": 0.3
+    }
   }
 }

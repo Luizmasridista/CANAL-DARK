@@ -112,6 +112,39 @@ def planos(tcortes, total):
     return [(a, b - a) for a, b in zip(marcas, marcas[1:]) if b - a > 0.05]
 
 
+VOGAIS = re.compile(r"[aeiouyáéíóúâêôãõàü]+", re.I)
+
+
+def silabas(txt):
+    """Conta sílabas aproximadas em PT-BR (grupos de vogais; ditongos contam 1)."""
+    return sum(max(1, len(VOGAIS.findall(p))) for p in normalizar(txt))
+
+
+def prosodia(arq, fim_util=None):
+    """Mede a entonação: variação do tom (semitons), faixa de tom, pausas/min e variação de volume.
+
+    Usa librosa (pyin). Semitom = degrau de altura musical; a variação em semitons mostra se a voz
+    "canta" a frase ou soa monótona, independente de ser voz grave ou aguda.
+    """
+    import numpy as np
+    import librosa
+    y, sr = librosa.load(str(arq), sr=16000, mono=True)
+    if fim_util:
+        y = y[: int(fim_util * sr)]
+    f0, voz, _ = librosa.pyin(y, fmin=60, fmax=400, sr=sr, frame_length=1024, hop_length=160)
+    f0 = f0[voz & ~np.isnan(f0)]
+    if len(f0) < 20:
+        return None
+    st = 12 * np.log2(f0 / np.median(f0))
+    rms = librosa.feature.rms(y=y, frame_length=1024, hop_length=160)[0]
+    db = 20 * np.log10(rms[rms > rms.max() * 0.05] + 1e-9)
+    dur = len(y) / sr
+    pausas = [i for i, f in silencios(arq, -40, 0.15) if 0.2 < i < dur - 0.2]
+    return {"f0_sigma_st": float(np.std(st)), "f0_faixa_st": float(np.percentile(st, 95) - np.percentile(st, 5)),
+            "f0_mediana_hz": float(np.median(f0)), "pausas_min": len(pausas) / dur * 60,
+            "volume_sigma_db": float(np.std(db))}
+
+
 def normalizar(txt):
     txt = unicodedata.normalize("NFKC", txt.lower())
     return re.findall(r"[\wà-ú]+", txt)
@@ -243,7 +276,14 @@ def gate_voz(pasta, rel, transcrever=False, mos=False):
     faltam = set(textos) - {w.stem for w in wavs}
     if faltam:
         rel.add("voz", "áudios por bloco", "FALHOU", sorted(faltam), "todos", "Gerar os blocos que faltam.")
-    wpms, wers, moss = [], [], []
+    wpms, wers, moss, sils, pros = [], [], [], [], []
+    try:
+        import librosa  # noqa: F401
+        tem_librosa = True
+    except ImportError:
+        tem_librosa = False
+        rel.add("voz", "entonação (prosódia)", "AVISO", "indisponível", "librosa instalado",
+                "pip install librosa", dono="gerente")
     modelo = preditor = None
     if transcrever:
         try:
@@ -270,6 +310,25 @@ def gate_voz(pasta, rel, transcrever=False, mos=False):
             st = "FALHOU" if not (L["wpm_min"] <= wpm <= L["wpm_max"]) else "PASSOU"
             rel.add("voz", "velocidade (palavras/min)", st, round(wpm), f"{L['wpm_min']}–{L['wpm_max']}",
                     "Ajustar 'velocidade' em canal/voz.md ou quebrar/encurtar frases." if st != "PASSOU" else "", bid)
+            sps = silabas(texto) / dur
+            sils.append(sps)
+            st = "PASSOU" if L["silabas_s_min"] <= sps <= L["silabas_s_max"] else "AVISO"
+            rel.add("voz", "velocidade (sílabas/s)", st, round(sps, 2), f"{L['silabas_s_min']}–{L['silabas_s_max']}",
+                    "Fora da faixa de narração PT-BR: ajustar velocidade do bloco ([VOZ: ritmo=...])." if st != "PASSOU" else "", bid)
+        if tem_librosa:
+            p = prosodia(w, duracao(w) - (float(pausa[1]) if pausa else 0))
+            if p:
+                pros.append(p)
+                rel.faixa("voz", "variação de tom (semitons)", p["f0_sigma_st"], L["f0_sigma_aviso"], L["f0_sigma_min"],
+                          "Voz monótona: frases mais curtas, perguntas, reticências antes de revelação, "
+                          "e alternar ritmo entre blocos.", bid, maior_ruim=False)
+                if p["f0_sigma_st"] > L["f0_sigma_max"]:
+                    rel.add("voz", "variação de tom exagerada", "AVISO", round(p["f0_sigma_st"], 2), f"≤ {L['f0_sigma_max']}",
+                            "Entonação teatral demais: reduzir exclamações.", bid)
+                st = "PASSOU" if L["pausas_min_min"] <= p["pausas_min"] <= L["pausas_min_max"] else "AVISO"
+                rel.add("voz", "pausas por minuto", st, round(p["pausas_min"], 1),
+                        f"{L['pausas_min_min']}–{L['pausas_min_max']}",
+                        "Poucas pausas cansam; muitas quebram o fluxo. Ajustar pontuação." if st != "PASSOU" else "", bid)
         a = astats(w)
         if a["pico"] >= L["pico_clip_db"]:
             rel.add("voz", "estouro (clipping)", "FALHOU", a["pico"], f"< {L['pico_clip_db']} dB", "Baixar ganho e regerar.", bid)
@@ -305,6 +364,11 @@ def gate_voz(pasta, rel, transcrever=False, mos=False):
         rel.metricas["voz.wpm_cv"] = round(cv, 4)
     if wpms:
         rel.metricas["voz.wpm_medio"] = round(statistics.mean(wpms), 1)
+    if sils:
+        rel.metricas["voz.silabas_s"] = round(statistics.mean(sils), 2)
+    if pros:
+        for k in ("f0_sigma_st", "f0_faixa_st", "pausas_min", "volume_sigma_db"):
+            rel.metricas[f"voz.{k}"] = round(statistics.mean(p[k] for p in pros), 2)
     if wers:
         rel.metricas["voz.wer_medio"] = round(statistics.mean(wers), 4)
     if moss:
