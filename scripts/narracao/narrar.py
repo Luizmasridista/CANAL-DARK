@@ -17,6 +17,9 @@ import soundfile as sf
 TAXA = 24000  # Kokoro gera áudio em 24 kHz
 BLOCO = re.compile(r"^## \[(B\d+)\][^\n]*\n(.*?)(?=^## \[B\d+\]|\Z)", re.S | re.M)
 PAUSA = re.compile(r"pausa_final=([\d.]+)s")
+RITMO = re.compile(r"ritmo=(lento|normal|rapido|rápido)")
+# Variar o ritmo entre blocos evita a voz monótona: tensão/revelação mais lentas, contexto mais solto.
+FATOR_RITMO = {"lento": 0.92, "normal": 1.0, "rapido": 1.06, "rápido": 1.06}
 
 
 def texto_falado(corpo: str) -> str:
@@ -58,9 +61,11 @@ def main() -> None:
     tempos, inicio = [], 0.0
     for bid, corpo in BLOCO.findall(roteiro):
         texto = texto_falado(corpo)
+        r = RITMO.search(corpo)
+        fator = FATOR_RITMO[r[1]] if r else 1.0
         if not texto:
             continue
-        audio = np.concatenate([np.asarray(aud) for _, _, aud in pipe(texto, voice=voz, speed=vel)])
+        audio = np.concatenate([np.asarray(aud) for _, _, aud in pipe(texto, voice=voz, speed=vel * fator)])
         m = PAUSA.search(corpo)
         if m:
             audio = np.concatenate([audio, np.zeros(int(float(m[1]) * TAXA), dtype=audio.dtype)])
